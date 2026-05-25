@@ -50,3 +50,57 @@ sortfieldsjson = "{"id": 110}"
     limit 50 + 1
 has_more = result_count > limit
 
+## Задание 3.
+### push уведомления в мобилку
+
+Событийно-ориентированный подход (**Event-Driven architecture**)
+
+`мс1`, `мс2`, `мс3` $\rightarrow$ **Брокер сообщений** $\rightarrow$ **Сервис уведомлений** $\leftrightarrow$ **БД**
+
+* **биржа - микросервисы - инициаторы**
+* (`kafka`, `rabbit mq`)
+
+#### Сервис уведомлений:
+* **API сообщения**
+* **RATE LIMIT**
+
+#### Провайдер доставки:
+* **Android:** Firebase Cloud Messaging
+* **iOS:** Apple Push Notification service
+
+$\rightarrow$ `device_token` $\rightarrow$ **МП**
+
+---
+
+### Таблица в БД:
+#### `user_push_token`
+* `id` `uuid` `PK`
+* `user_id` `UUID`
+* `token` `string` `unique`
+* `os_type` (`ios`, `Android`)
+* `device_id` `string`
+* `is_active` `bool`
+* `updated_at` `Timestamp`
+
+---
+
+### Token Lifecycle
+
+1. **Генерация:** при первом запуске МП запрашивает разрешение на пуши. ОС выдает `token` $\rightarrow$ `/api/push/tokens`
+2. **Обновление** (обновили приложение, восстановление из backup, изменение диска) $\rightarrow$ отправка на backend
+3. **Деактивация** — при удалении пуша или Log out. `/api/auth/logout`
+
+---
+
+### Запрос:
+`POST /api/push/tokens`
+
+```json
+{
+  "token": "fcm_token_example",
+  "os_type": "android",
+  "device_id": "9.7945d85871",
+  "app_version": "1.4.1",
+  "locale": "ru_RU"
+}
+```
